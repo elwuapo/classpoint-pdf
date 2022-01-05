@@ -1,0 +1,16 @@
+1- instalar las siguientes librerias:
+xhtml2pdf  --> https://pypi.org/project/xhtml2pdf/
+matplotlib --> https://pypi.org/project/matplotlib/
+
+2- crear una carpeta llamada charts en la ruta classpoint/classpoint/static/, en esta carpeta
+se guardara la imagen del grafico para el pdf.
+
+3- Reemplazar los archivos views.py y urls.py ubicados en la ruta classpoint/classpoint/reports/,
+se creo la class PDFGenerator que sera encargada de generar el PDF mientras que la funcion generateGraph se
+encargara de generar los graficos.
+
+4- Reemplazar el archivo student_by_target.html ubicado en la ruta classpoint/classpoint/templates/reports,
+se agrego un boton para imprimir los reportes.
+
+4- Agregar el archivo report_pdf_student_by_target.html en la ruta classpoint/classpoint/templates/reports,
+este archivo html sera con el que se generara la estructura del PDF.

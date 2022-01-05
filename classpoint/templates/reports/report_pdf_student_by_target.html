@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+        <title>{{title}}</title>
+    </head>
+
+    <body>
+
+        <h1 style="text-align: left;"> Información general </h1>
+
+        <table>
+            <tr>
+                <td colspan="12"><b>Nombre completo:</b> {{name}}</td>
+            </tr>
+            <tr>
+                <td colspan="12"><b>Instituto:</b> {{institute}}</td>
+            </tr>
+            <tr>
+                <td colspan="3"><b>Fecha:</b> {{date}}</td>
+                <td colspan="3"><b>Nucleo:</b> {{core}}</td>
+                <td colspan="3"><b>Nivel:</b> {{level}}</td>
+                <td colspan="3"><b>Curso:</b> {{grade}}</td>
+            </tr>
+        </table>
+        <br>
+        <br>
+
+        {% if objectives.count > 1 %}
+            <h1 style="text-align: left;"> Objetivos </h1>
+        {% else %}
+            <h1 style="text-align: left;"> Objetivo </h1>
+        {% endif %}
+
+        {% for objective in objectives %}
+            <table>
+                <tr>
+                    <td colspan="1" style="text-align: center;"><b>{{objective.identifier}}</b></td>
+                    <td colspan="9"><b>Nombre:</b> {{objective.name}}</td>
+                    <td colspan="2">
+                        <b>Prioritario: </b>
+                        {% if objective.is_prioritized %}
+                            SI
+                        {% else %}
+                            NO
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="12"><b>Descripcion:</b> {{ objective.description}}</td>
+                </tr>
+            </table>
+            <br>
+            <br>
+        {% endfor %}
+
+        <h1 style="text-align: left;"> Graficos </h1>
+
+        <img src="{{chart}}" alt="img-charts" style="width: 100%;">
+    </body>
+</html>
