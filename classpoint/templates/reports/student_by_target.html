@@ -107,22 +107,22 @@
                     <td>
                       {% if current_student != student %}
                         <a class="btn btn-success"
-                          style="width: 7.7vw;"
+                          style="width: 8.3vw;"
                            href="?{% if request.GET.core and request.GET.level and request.GET.group %}core={{ request.GET.core }}&level={{ request.GET.level }}&group={{ request.GET.group }}&learning_target={{ request.GET.learning_target }}&{% endif %}student_id={{ current_student.pk }}">
                           <i class="fa fa-check"></i>&nbsp;Ver desempeño
                         </a>
                       {% elif report == 'report_by_objective' %}
                         <a class="btn btn-warning"
-                           style="width: 7.7vw;"
+                           style="width: 8.3vw;"
                            href="download-pdf/?student_id={{current_student.pk}}&level={{ form.level.value }}&core={{ form.core.value }}&group={{ form.group.value }}&school={{ form.school.value }}&learning_target={{ form.learning_target.value }}&bar_chart=[('{{ student.full_name }}', {{student_by_core_data.0.student_average}}), ('Curso {{ student.group.name }}', {{student_by_core_data.0.course_average}})]&line_chart={{student_evaluations}}">
                           <i class="fa fa-print"></i>&nbsp;Imprimir PDF
                         </a>
                       {% elif report == 'report_by_core' %}
-                        <!--<a class="btn btn-warning"
-                            style="width: 7.7vw;"
-                            href="download-pdf">
-                          <i class="fa fa-print"></i>&nbsp;Imprimir RPN
-                        </a>-->
+                        <a class="btn btn-warning"
+                            style="width: 8.3vw;"
+                            href="download-pdf/?student_id={{current_student.pk}}&level={{ form.level.value }}&core={{ form.core.value }}&school={{ form.school.value }}&bar_chart=[('Logrado', {{ student_entry.achieved }}), ('Medianamente logrado', {{ student_entry.moderately_accomplished }}), ('Por lograr', {{ student_entry.not_achieved }})]">
+                          <i class="fa fa-print"></i>&nbsp;Imprimir PDF
+                        </a>
                       {% endif %}
                     </td>
                   </tr>

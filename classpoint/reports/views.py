@@ -1,18 +1,18 @@
+from io import BytesIO
+from datetime import date as dt
+
 from braces.views import (
     LoginRequiredMixin,
     StaticContextMixin
 )
-
-from classpoint.schools.models import School
 
 from django.http.response import HttpResponse
 from django.template.loader import get_template
 from django.views.generic import TemplateView
 from django.views import View
 
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from classpoint.reports.utils import generate_bar_and_line_char, generate_bar_chart, generate_pie_chart
+from classpoint.schools.models import School
 
 from ..base.generic_views import UserPassesTestRedirectMixin
 from ..groups.models import Group
@@ -26,8 +26,6 @@ from .forms import (
 )
 
 from xhtml2pdf import pisa
-from datetime import date as dt
-
 
 class ReportBaseMixin(
     LoginRequiredMixin,
@@ -306,19 +304,19 @@ class StudentByCore(
         return context_data
 
 
-class PDFGenerator(View):
+class StudentByTargetPDF(View):
     def link_callback(self, uri, rel):
         pass
 
     def get(self, request, *args, **kwargs):
-        student   = Student.objects.get(id = request.GET.get('student_id', ''))
-        school    = School.objects.get(id = request.GET.get('school', ''))
-        learning  = request.GET.get('learning_target', '')
-        grade     = student.group
-        fullname  = student.full_name
-        template  = get_template('reports/report_pdf_student_by_target.html')
-        level     = ''
-        core      = ''
+        student = Student.objects.get(id = request.GET.get('student_id', ''))
+        school = School.objects.get(id = request.GET.get('school', ''))
+        learning = request.GET.get('learning_target', '')
+        grade = student.group
+        fullname = student.full_name
+        template = get_template('reports/report_pdf_student_by_target.html')
+        level = ''
+        core = ''
 
         if(learning == '' or learning == 'None'):
             objectives  = LearningTarget.objects.filter(core = request.GET.get('core', '')).filter(level = request.GET.get('level', '')).order_by('identifier')
@@ -335,16 +333,16 @@ class PDFGenerator(View):
                 core = core
                 break
         
-        bar_chart_data  = request.GET.get('bar_chart', '')
+        bar_chart_data = request.GET.get('bar_chart', '')
         line_chart_data = request.GET.get('line_chart', '')
 
         # [(student, student_avg), ('group', 'group_avg')]
         data1 = eval(bar_chart_data)
 
-        # [(fecha, evaluacion, grupo evaluacion), ...]
+        # [(date, evaluation, group_evaluation), ...]
         data2 = eval(line_chart_data)
 
-        chart = generateGraph(data1, data2)
+        chart = generate_bar_and_line_char(data1, data2)
 
         context = {
             'title': '{}.pdf'.format(fullname),
@@ -360,48 +358,67 @@ class PDFGenerator(View):
         
         html = template.render(context)
 
-        # creacion del objeto que devolvera la vista
         response = HttpResponse(content_type = 'application/pdf')
         response['Content-Disposition'] = 'filename="{}.pdf"'.format(fullname)
         
-        pisaStatus = pisa.CreatePDF(html, dest=response, link_callback=None)
+        pisaStatus = pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=response, link_callback=None)
 
         if(pisaStatus.err):
             return HttpResponse('We had some erros <pre>' + html + '</pre>')
         else:
             return response
 
-def generateGraph(data1, data2):
-    # variables grafico 1
-    estudiantes    = [ name for name, avg in data1 ]
-    calificaciones = [ avg for name, avg in data1 ]
-    color          = ['blue', 'red']
+class StudentByCorePDF(View):
+    def get(self, request, *args, **kwargs):
+        student = Student.objects.get(id = request.GET.get('student_id', ''))
+        school = School.objects.get(id = request.GET.get('school', ''))
+        grade = student.group
+        fullname = student.full_name
+        template = get_template('reports/report_pdf_student_by_core.html')
+        level = ''
+        core = ''
 
-    # variables grafico 2
-    fechas     = [ data[0] +'(' + str(index) +')' for index, data in enumerate(data2)]
-    curso      = [ float(group_evaluation) for date, evaluation, group_evaluation in data2]
-    estudiante = [ evaluation for date, evaluation, group_evaluation in data2]
+        for id, level in grade.GROUP_TYPE_CHOICES:
+            if(id == int(request.GET.get('level', ''))):
+                level = level
+                break
 
-    # creación de la matriz que contendran los 2 graficos
-    fig, axs = plt.subplots(1, 2, figsize=(15, 5), sharey=True)
+        for id, core in LearningTarget.CORE_CHOICES:
+            if(id == int(request.GET.get('core', ''))):
+                core = core
+                break
 
-    # creación del grafico de barra.
-    axs[0].bar(estudiantes, calificaciones, color=color, width=0.4)
-    axs[0].set_xlabel('Actividad')
-    axs[0].set_ylabel('Desempeño')
-    axs[0].set_title('Grafico Comparativo')
+        bar_chart_data  = request.GET.get('bar_chart', '')
+        
+        data = eval(bar_chart_data)
 
-    if( data2 != list()):
-        for value in enumerate(calificaciones):
-            axs[0].text(value[0] - 0.05, value[1] + 0.05, value[1])
+        bar_chart = generate_bar_chart(data)
+        pie_chart = generate_pie_chart(data)
+        
+        context = {
+            'title': '{}.pdf'.format(fullname),
+            'name': fullname,
+            'date': dt.today().strftime("%d/%m/%Y"),
+            'institute': school.name,
+            'core': core,               # Lenguaje Verbal (no llega mediante el GET)
+            'level': level,             # Kinder
+            'grade': grade.name,        # Kinder A
+            'bar_chart': '{}://{}{}{}'.format(request.scheme, request.headers['Host'], '/static/', bar_chart),
+            'pie_chart': '{}://{}{}{}'.format(request.scheme, request.headers['Host'], '/static/', pie_chart),
+        }
 
-    # creacion del grafico lineal.
-    axs[1].plot(fechas, estudiante, label='Francisco Barria Calderon', color='blue')
-    axs[1].plot(fechas, curso, label='Kinder A', color='red')
-    axs[1].set_xlabel('Fecha de evaluación')
-    axs[1].set_ylabel('Escala de apreciación')
-    axs[1].set_title('Evolución del aprendizaje')
+        html = template.render(context)
 
-    plt.savefig('classpoint/static/charts/chart.JPEG')
+        response = HttpResponse(content_type = 'application/pdf')
+        response['Content-Disposition'] = 'filename="{}.pdf"'.format(fullname)
+        
+        pisaStatus = pisa.CreatePDF(
+            BytesIO(html.encode('UTF-8')), 
+            dest=response, 
+            link_callback=None
+        )
 
-    return 'charts/chart.JPEG'
+        if(pisaStatus.err):
+            return HttpResponse('We had some erros <pre>' + html + '</pre>')
+        else:
+            return response

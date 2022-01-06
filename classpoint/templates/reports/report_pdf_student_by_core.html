@@ -47,36 +47,12 @@
         <br>
         <br>
 
-        {% if objectives.count > 1 %}
-            <h1 style="text-align: left;"> Objetivos </h1>
-        {% else %}
-            <h1 style="text-align: left;"> Objetivo </h1>
-        {% endif %}
+        <h1 style="text-align: left;"> Graficos Núcleo: {{core}}</h1>
 
-        {% for objective in objectives %}
-            <table>
-                <tr>
-                    <td colspan="1" style="text-align: center;"><b>{{objective.identifier}}</b></td>
-                    <td colspan="9"><b>Nombre:</b> {{objective.name}}</td>
-                    <td colspan="2">
-                        <b>Prioritario: </b>
-                        {% if objective.is_prioritized %}
-                            SI
-                        {% else %}
-                            NO
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="12"><b>Descripcion:</b> {{ objective.description}}</td>
-                </tr>
-            </table>
-            <br>
-            <br>
-        {% endfor %}
-
-        <h1 style="text-align: left;"> Graficos </h1>
-
-        <img src="{{chart}}" alt="img-charts" style="width: 100%;">
+        <center>
+            <img src="{{bar_chart}}" alt="img-charts" style="width: 300px;">
+            <img src="{{pie_chart}}" alt="img-charts" style="width: 300px;">
+        </center>
+        
     </body>
 </html>

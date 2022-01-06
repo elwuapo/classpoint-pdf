@@ -27,12 +27,12 @@ urlpatterns = [
     ),
     path(
         "student-by-target/download-pdf/",
-        view=views.PDFGenerator.as_view(),
+        view=views.StudentByTargetPDF.as_view(),
         name="student-by-target-download-pdf"
     ),
     path(
         "student-by-core/download-pdf/",
-        view=views.PDFGenerator.as_view(),
+        view=views.StudentByCorePDF.as_view(),
         name="student-by-core-download-pdf"
-    )
+    ),
 ]
