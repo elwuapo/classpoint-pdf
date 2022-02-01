@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+        <title>{{title}}</title>
+    </head>
+
+    <body>
+
+        <h1 style="text-align: left;"> Información general </h1>
+
+        <table>
+            <tr>
+                <td colspan="9"><b>Institución:</b> {{institute}}</td>
+                <td colspan="3"><b>Fecha:</b> {{date}}</td>
+            </tr>
+            <tr>
+                <td colspan="6"><b>Nivel:</b> {{level}}</td>
+                <td colspan="6"><b>Curso:</b> {{grade}}</td>
+            </tr>
+        </table>
+        <br>
+        <br>
+
+        {% for data in core_data %} <!--[{'core', 'objectives', 'not_evaluated', 'chart'}, ...] keys-->
+            {% if data|length > 1 %}
+                <h1 style="text-align: left;"> Objetivos de {{data.core}} </h1>
+            {% else %}
+                <h1 style="text-align: left;"> Objetivo de {{data.core}}</h1>
+            {% endif %}
+
+            {% for objective in data.objectives.all %}
+                <table>
+                    <tr>
+                        <td colspan="1" style="text-align: center;"><b>{{objective.identifier}}</b></td>
+                        <td colspan="9"><b>Nombre:</b> {{objective.name}}</td>
+                        <td colspan="2">
+                            <b>Prioritario: </b>
+                            {% if objective.is_prioritized %}
+                                SI
+                            {% else %}
+                                NO
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="12"><b>Descripción:</b> {{ objective.description}}</td>
+                    </tr>
+                </table>
+                <br>
+                <br>
+            {% endfor %}
+
+            <h1 style="text-align: left;"> Gráficos </h1>
+
+            <center><img src="{{protocol}}://{{domain}}/{{data.chart}}" alt="img-charts" style="width: 100%;"></center>
+            <br>
+            <br>
+
+            <center><b>Ausentes:</b> {{data.not_evaluated}}</center>
+
+        {% endfor %}
+    </body>
+</html>

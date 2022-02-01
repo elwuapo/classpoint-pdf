@@ -1,3 +1,4 @@
+from turtle import clear
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ def generate_bar_and_line_char(bar_graph_data, line_graph_data):
     axs[0].bar(studens, calification, color=color, width=0.4)
     axs[0].set_xlabel('Actividad')
     axs[0].set_ylabel('Desempeño')
-    axs[0].set_title('Grafico Comparativo')
+    axs[0].set_title('Gráfico Comparativo')
 
     if(line_graph_data):
         for value in enumerate(calification):
@@ -32,58 +33,127 @@ def generate_bar_and_line_char(bar_graph_data, line_graph_data):
     axs[1].set_ylabel('Escala de apreciación')
     axs[1].set_title('Evolución del aprendizaje')
 
-    plt.savefig('classpoint/static/charts/chart.JPEG')
+    image_path = 'media/pdf-charts/report_by_objective_chart.JPEG'
+    plt.savefig('classpoint/' + image_path)
 
-    return 'charts/chart.JPEG'
+    return image_path
 
-
-def generate_bar_chart(data):
-    rating_scale = [ name for name, avg in data ]
-    number_of_evaluations = [ avg for name, avg in data ]
-    colors = ['#689f38', '#4688f1', '#d9453d']
-
-    fig1, ax1 = plt.subplots()
-
-    ax1.bar(rating_scale, 
-        number_of_evaluations, 
-        color=colors, 
-        width=0.4
-    )
-
-    ax1.set_xlabel('Escala de Apreciación')
-    ax1.set_ylabel('Cantidad de evaluaciones')
-
-    plt.savefig('classpoint/static/charts/bar_chart.JPEG')
-
-    return 'charts/bar_chart.JPEG'
-
-def generate_pie_chart(data):
-    rating_scale = [ name for name, avg in data if avg != 0 ]
-    number_of_evaluations = [ avg for name, avg in data if avg != 0 ]
+def generate_bar_and_pie_chart(data, core):
+    labels_pie = [ name for name, avg in data if avg != 0 ]
+    valors_pie = [ avg for name, avg in data if avg != 0 ]
     explode = tuple([ 0.05 for name, avg in data if avg != 0 ])
-    colors = list()
+    colors_pie = list()
 
-    for element in rating_scale:
-        if element == 'Logrado':
-            colors.append('#689f38')
-        elif element == 'Medianamente logrado':
-            colors.append('#4688f1')
+    labels_bar = [ name for name, avg in data ]
+    valors_bar = [ avg for name, avg in data ]
+    colors_bar = ['#689f38', '#4688f1', '#d9453d']
+
+    for label in labels_pie:
+        if label == 'Logrado':
+            colors_pie.append('#689f38')
+        elif label == 'Medianamente logrado':
+            colors_pie.append('#4688f1')
         else:
-            colors.append('#d9453d')
+            colors_pie.append('#d9453d')
 
-    fig1, ax1 = plt.subplots()
+    if(valors_pie):
+        fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+        
+        axs[1].pie(
+            valors_pie,
+            explode = explode,
+            labels  = labels_pie,
+            colors  = colors_pie,
+            autopct = '%1.1f%%',
+            startangle=90
+        )
 
-    ax1.pie(number_of_evaluations, 
-        explode=explode, 
-        colors = colors, 
-        labels=rating_scale, 
-        autopct='%1.1f%%', 
-        startangle=90
-    )
+        axs[1].set_title('Evaluaciones')
 
-    ax1.axis('equal')  
-    plt.tight_layout()
+        axs[0].bar(
+            labels_bar,
+            valors_bar,
+            width=0.4,
+            color=colors_bar,
+        )
+
+        axs[0].set_xlabel('Escala de Apreciación')
+        axs[0].set_ylabel('Cantidad de evaluaciones')
+        axs[0].set_title(core)
+
+        image_path = 'media/pdf-charts/report_by_core_chart.JPEG'
+
+        plt.savefig('classpoint/' + image_path)
+    else:
+        fig, ax = plt.subplots(figsize=(15, 5))
+
+        ax.bar(
+            labels_bar,
+            valors_bar,
+            width=0.4,
+            color=colors_bar,
+        )
+
+        ax.set_xlabel('Escala de Apreciación')
+        ax.set_ylabel('Cantidad de evaluaciones')
+        ax.set_title(core)
+
+        image_path = 'media/pdf-charts/report_by_core_chart.JPEG'
+
+        plt.savefig('classpoint/' + image_path)
+
+    return image_path
+
+def generate_pie_and_bar_charts(data):
+    labels = ['Logrado', 'Medianamente Logrado', 'Por Logrado']
+    colors = ['#689f38', '#4688f1', '#d9453d']
+    valors = [data.get('achieved'), data.get('moderately_accomplished'), data.get('not_achieved')]
+    explode = tuple([ 0.05 for e in valors])
+
+    if(data.get('achieved') != 0 or data.get('moderately_accomplished') != 0 or data.get('not_achieved') != 0):
+        fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     
-    plt.savefig('classpoint/static/charts/pie_chart.JPEG')
+        axs[1].pie(
+            valors,
+            explode = explode,
+            labels  = labels,
+            colors  = colors,
+            autopct = '%1.1f%%',
+            startangle=90
+        )
 
-    return 'charts/pie_chart.JPEG'
+        axs[1].set_title('Evaluaciones')
+
+        axs[0].bar(
+            labels,
+            valors,
+            width=0.4,
+            color=colors,
+        )
+
+        axs[0].set_xlabel('Escala de Apreciación')
+        axs[0].set_ylabel('Cantidad de alumnos')
+        axs[0].set_title(data.get('core_name'))
+
+        image_path = 'media/pdf-charts/{}_chart.JPEG'.format(data.get('abbreviation'))
+
+        plt.savefig('classpoint/' + image_path)
+    else:
+        fig, ax = plt.subplots(figsize=(15, 5))
+
+        ax.bar(
+            labels,
+            valors,
+            width=0.4,
+            color=colors,
+        )
+
+        ax.set_xlabel('Escala de Apreciación')
+        ax.set_ylabel('Cantidad de alumnos')
+        ax.set_title(data.get('core_name'))
+
+        image_path = 'media/pdf-charts/{}_chart.JPEG'.format(data.get('abbreviation'))
+
+        plt.savefig('classpoint/' + image_path)
+
+    return image_path

@@ -11,8 +11,9 @@ from django.template.loader import get_template
 from django.views.generic import TemplateView
 from django.views import View
 
-from classpoint.reports.utils import generate_bar_and_line_char, generate_bar_chart, generate_pie_chart
+from classpoint.reports.utils import generate_bar_and_line_char, generate_pie_and_bar_charts, generate_bar_and_pie_chart
 from classpoint.schools.models import School
+from classpoint.users.models import User
 
 from ..base.generic_views import UserPassesTestRedirectMixin
 from ..groups.models import Group
@@ -252,6 +253,10 @@ class CourseByCore(
         context_data['course_by_core_data'] = course_by_core_data
 
         context_data['core_name'] = course_by_core_data and course_by_core_data[-1]['core_name']
+        
+        context_data['report'] = 'report_course_by_core'
+
+        print(context_data)
 
         return context_data
 
@@ -306,7 +311,7 @@ class StudentByCore(
 
 class StudentByTargetPDF(View):
     def link_callback(self, uri, rel):
-        pass
+        return
 
     def get(self, request, *args, **kwargs):
         student = Student.objects.get(id = request.GET.get('student_id', ''))
@@ -353,7 +358,7 @@ class StudentByTargetPDF(View):
             'level': level,             # Kinder
             'objectives': objectives,   # Todos, 1-Expresar oralmente, 2-Comprender en base a textos orales.
             'grade': grade.name,        # Kinder A
-            'chart': '{}://{}{}{}'.format(request.scheme, request.headers['Host'], '/static/', chart)
+            'chart': '{}://{}/{}'.format(request.scheme, request.headers['Host'], chart)
         }
         
         html = template.render(context)
@@ -361,7 +366,11 @@ class StudentByTargetPDF(View):
         response = HttpResponse(content_type = 'application/pdf')
         response['Content-Disposition'] = 'filename="{}.pdf"'.format(fullname)
         
-        pisaStatus = pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=response, link_callback=None)
+        pisaStatus = pisa.CreatePDF(
+            BytesIO(html.encode('UTF-8')), 
+            dest=response, 
+            link_callback=None
+        )
 
         if(pisaStatus.err):
             return HttpResponse('We had some erros <pre>' + html + '</pre>')
@@ -387,13 +396,12 @@ class StudentByCorePDF(View):
             if(id == int(request.GET.get('core', ''))):
                 core = core
                 break
-
+        
         bar_chart_data  = request.GET.get('bar_chart', '')
         
         data = eval(bar_chart_data)
 
-        bar_chart = generate_bar_chart(data)
-        pie_chart = generate_pie_chart(data)
+        charts = generate_bar_and_pie_chart(data, core)
         
         context = {
             'title': '{}.pdf'.format(fullname),
@@ -403,14 +411,77 @@ class StudentByCorePDF(View):
             'core': core,               # Lenguaje Verbal (no llega mediante el GET)
             'level': level,             # Kinder
             'grade': grade.name,        # Kinder A
-            'bar_chart': '{}://{}{}{}'.format(request.scheme, request.headers['Host'], '/static/', bar_chart),
-            'pie_chart': '{}://{}{}{}'.format(request.scheme, request.headers['Host'], '/static/', pie_chart),
+            'charts': '{}://{}/{}'.format(request.scheme, request.headers['Host'], charts),
         }
 
         html = template.render(context)
 
         response = HttpResponse(content_type = 'application/pdf')
         response['Content-Disposition'] = 'filename="{}.pdf"'.format(fullname)
+        
+        pisaStatus = pisa.CreatePDF(
+            BytesIO(html.encode('UTF-8')), 
+            dest=response, 
+            link_callback=None
+        )
+
+        if(pisaStatus.err):
+            return HttpResponse('We had some erros <pre>' + html + '</pre>')
+        else:
+            return response
+
+class CourseByCorePDF(View):
+    def get(self, request, *args, **kwargs):
+        school = School.objects.get(id = request.GET.get('school'))
+        course_by_core_data = request.GET.get('course_by_core_data', [])
+        template = get_template('reports/report_pdf_course_by_core.html')
+        level_id = request.GET.get('level')
+        grade = request.GET.get('course')
+        level = ''
+
+        for id, level in User.LEVEL_CHOICES:
+            if(id == int(request.GET.get('level', ''))):
+                level = level
+                break
+        
+        data = eval(course_by_core_data)
+        
+        core_data = list()
+
+        for course_data in data:
+            core_name = course_data.get('core_name')
+            not_evaluated = course_data.get('not_evaluated')
+
+            try:
+                core_id = next(id for id, core in LearningTarget.CORE_CHOICES if core == core_name)
+                queryset = LearningTarget.objects.filter(core = core_id).filter(level = level_id).order_by('identifier')
+
+            except:
+                lista = core_name.split(' - ')
+                core_name = lista[0]
+                objetive_name = lista[2]
+                core_id = next(id for id, core in LearningTarget.CORE_CHOICES if core == core_name)
+                
+                queryset = LearningTarget.objects.filter(core = core_id).filter(level = level_id).filter(name = objetive_name).order_by('identifier')
+            
+            chart = generate_pie_and_bar_charts(course_data)
+            core_data.append({'core': core_name,'objectives': queryset,'not_evaluated': not_evaluated, 'chart': chart})
+        
+        context = {
+            'title': '{}_{}.pdf'.format(school.name, level),
+            'date': dt.today().strftime("%d/%m/%Y"),
+            'institute': school.name,
+            'core_data': core_data,           # Diccionario que contiene el nucleo, los objetivos del nucleo y sus respectivos graficos
+            'level': level,                   
+            'grade': grade,            
+            'protocol': request.scheme,
+            'domain': request.headers['Host'],
+        }
+
+        html = template.render(context)
+
+        response = HttpResponse(content_type = 'application/pdf')
+        response['Content-Disposition'] = 'filename="{}_{}.pdf"'.format(school.name, level)
         
         pisaStatus = pisa.CreatePDF(
             BytesIO(html.encode('UTF-8')), 

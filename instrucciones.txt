@@ -14,3 +14,12 @@ se agrego un boton para imprimir los reportes.
 
 4- Agregar el archivo report_pdf_student_by_target.html en la ruta classpoint/classpoint/templates/reports,
 este archivo html sera con el que se generara la estructura del PDF.
+
+CORRECCIONES Y REQUERIMIENTO 3
+
+1- crear una carpeta llamada pdf-charts en la ruta classpoint/classpoint/media/, en esta carpeta
+se guardara la imagen del grafico para el pdf. (Esto deberia solucinar el problema con la actualizacion de las imagenes)
+
+2- eliminar la carpeta charts ubicada en la ruta classpoint/classpoint/static/ ya que esta obsoleta.
+
+3- reemplazar o agregar el resto de archivos en su respectiva ubicacion.

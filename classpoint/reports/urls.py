@@ -35,4 +35,9 @@ urlpatterns = [
         view=views.StudentByCorePDF.as_view(),
         name="student-by-core-download-pdf"
     ),
+    path(
+        "course-by-core/download-pdf/",
+        view=views.CourseByCorePDF.as_view(),
+        name="course-by-core-download-pdf"
+    ),
 ]
