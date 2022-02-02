@@ -24,8 +24,8 @@ def generate_bar_and_line_char(bar_graph_data, line_graph_data):
     axs[0].set_title('Gráfico Comparativo')
 
     if(line_graph_data):
-        for value in enumerate(calification):
-            axs[0].text(value[0] - 0.05, value[1] + 0.05, value[1])
+        for index, valor in enumerate(calification):
+            axs[0].text(index - 0.05, (valor/2) + 0.025, valor)
 
     axs[1].plot(dates, student, color='#4688f1')
     axs[1].plot(dates, grade, color='#d9453d')
@@ -81,6 +81,9 @@ def generate_bar_and_pie_chart(data, core):
         axs[0].set_ylabel('Cantidad de evaluaciones')
         axs[0].set_title(core)
 
+        for index, valor in enumerate(valors_bar):
+            axs[0].text(index - 0.05, (valor/2) + 0.025, valor)
+
         image_path = 'media/pdf-charts/report_by_core_chart.JPEG'
 
         plt.savefig('classpoint/' + image_path)
@@ -97,6 +100,9 @@ def generate_bar_and_pie_chart(data, core):
         ax.set_xlabel('Escala de Apreciación')
         ax.set_ylabel('Cantidad de evaluaciones')
         ax.set_title(core)
+
+        for index, valor in enumerate(valors_bar):
+            ax.text(index - 0.05, (valor/2) + 0.025, valor)
 
         image_path = 'media/pdf-charts/report_by_core_chart.JPEG'
 
@@ -135,6 +141,9 @@ def generate_pie_and_bar_charts(data):
         axs[0].set_ylabel('Cantidad de alumnos')
         axs[0].set_title(data.get('core_name'))
 
+        for index, valor in enumerate(valors):
+            axs[0].text(index - 0.05, (valor/2) + 0.025, valor)
+
         image_path = 'media/pdf-charts/{}_chart.JPEG'.format(data.get('abbreviation'))
 
         plt.savefig('classpoint/' + image_path)
@@ -151,6 +160,9 @@ def generate_pie_and_bar_charts(data):
         ax.set_xlabel('Escala de Apreciación')
         ax.set_ylabel('Cantidad de alumnos')
         ax.set_title(data.get('core_name'))
+
+        for index, valor in enumerate(valors):
+            ax.text(index - 0.05, (valor/2) + 0.025, valor)
 
         image_path = 'media/pdf-charts/{}_chart.JPEG'.format(data.get('abbreviation'))
 
