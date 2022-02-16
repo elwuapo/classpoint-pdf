@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{title}}</title>
+
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <h1 style="text-align: left;"> Información general </h1>
+
+        <table>
+            <tr>
+                <td colspan="12"><b>Nombre:</b> {{student.first_name}}</td>
+            </tr>
+            <tr>
+                <td colspan="12"><b>Apellido:</b> {{student.last_name}}</td>
+            </tr>
+            <tr>
+                <td colspan="2"><b>Nro de lista:</b> {{student.list_number}}</td>
+                <td colspan="3"><b>Rut:</b> {{student.rut}}</td>
+                <td colspan="3"><b>Curso:</b> {{student.group}}</td>
+                <td colspan="4"><b>Fecha nacimiento:</b> {{student.birth_date}}</td>
+            </tr>
+        </table>
+
+        <h1 style="text-align: left;"> Detalles del registro </h1>
+
+        <table>
+            <tr>
+                <td colspan="9"><b>Actividad o aspecto observado:</b> {{ anecdotal_record.activity|default:"Momentos" }}</td>
+                <td colspan="3"><b>Fecha:</b> {{ anecdotal_record.created_at|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <td colspan="5"><b>Tiempo de observación:</b> {{ anecdotal_record.observation_time }} minuto{{ anecdotal_record.observation_time|pluralize }}</td>
+                <td colspan="7"><b>Fuente de observación:</b> {{ anecdotal_record.observation_source }}</td>
+            </tr>
+            <tr>
+                <td colspan="12"><b>Conducta observada:</b> {{ anecdotal_record.observed_behaviour }}</td>
+            </tr>
+            <tr>
+                <td colspan="12"><b>Interpretación:</b> {{ anecdotal_record.interpretation }}</td>
+            </tr>
+            <tr>
+                <td colspan="12"><b>Comentarios - coordinación:</b> {{ anecdotal_record.comments|default:'-' }}</td>
+            </tr>
+        </table>
+
+        <br>
+        <br>
+
+        <h1 style="text-align: left;"> Imagen </h1>
+
+        <center><img src="{{protocol}}://{{domain}}{{ anecdotal_record.image.url }}" style="width: 100%;"></center>
+    </body>
+</html>

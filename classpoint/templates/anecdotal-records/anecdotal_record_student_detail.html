@@ -1,0 +1,98 @@
+{% extends 'anecdotal-records/anecdotal-records_base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block header_content %}
+  Datos generales del alumno
+{% endblock header_content %}
+
+{% block page_title %}
+
+{% endblock page_title %}
+
+{% block extra_breadcrumb %}
+  <li><a class="active">{{ student.first_name }} {{ student.last_name }}</a></li>
+{% endblock extra_breadcrumb %}
+
+{% block main_box_content %}
+  <table class="table table-striped">
+    <thead>
+    </thead>
+    <tbody>
+    <tr>
+      <td><strong>Nombre</strong></td>
+      <td>{{ student.first_name }}</td>
+    </tr>
+    <tr>
+      <td><strong>Apellido</strong></td>
+      <td>{{ student.last_name }}</td>
+    </tr>
+    <tr>
+      <td><strong>Número de lista</strong></td>
+      <td>{{ student.list_number }}</td>
+    </tr>
+    <tr>
+      <td><strong>RUT</strong></td>
+      <td>{{ student.rut }}</td>
+    </tr>
+    <tr>
+      <td><strong>Curso</strong></td>
+      <td>{{ student.group }}</td>
+    </tr>
+    <tr>
+      <td><strong>Fecha de nacimiento</strong></td>
+      <td>{{ student.birth_date|date:"d/m/Y" }}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h1>Registros Anecdóticos</h1>
+
+  <div class="table-responsive">
+    <table id="table-item" class="table table-hover">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Actividad</th>
+          <th>Conducta observada</th>
+          <th>Fuente de observación</th>
+          <th>Tiempo de observación</th>
+          <th>Creado</th>
+          <th>Actualizado</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for anecdotal_record in student.active_anecdotal_records %}
+          <tr>
+            <td>
+              <a href="{% url 'evaluations:anecdotal_record_detail' anecdotal_record.pk %}">
+                {{ anecdotal_record.created_at|date:"d/m/Y" }}
+              </a>
+            </td>
+            <td>{{ anecdotal_record.activity.learning_target.get_core_display|default:"Momentos" }}</td>
+            <td>{{ anecdotal_record.observed_behaviour }}</td>
+            <td>{{ anecdotal_record.observation_source }}</td>
+            <td>{{ anecdotal_record.observation_time }} minuto{{ anecdotal_record.observation_time|pluralize }}</td>
+            <td>{{ anecdotal_record.created_at|date:"d/m/Y" }}</td>
+            <td>hace {{ anecdotal_record.updated_at|timesince }}</td>
+            <td>
+              <center>
+                <a class="btn btn-success" href="{% url 'evaluations:anecdotal_record_detail' anecdotal_record.pk %}">
+                  Ver
+                </a>
+                <a style="margin-left: 10px" class="btn btn-primary" href="{% url 'evaluations:anecdotal_record_edit' anecdotal_record.pk %}">
+                  Editar
+                </a>
+                <a style="margin-left: 10px" class="btn btn-warning" href="download-pdf/?anecdotal_record_id={{anecdotal_record.pk}}">
+                  Imprimir
+                </a>
+              </center>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock main_box_content %}
