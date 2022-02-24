@@ -1,0 +1,141 @@
+{% extends 'reports/student_by_target.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block header_content %}
+  Reporte por núcleo
+{% endblock header_content %}
+
+{% block page_title %}
+  Reporte por núcleo
+{% endblock page_title %}
+
+{% block charts %}
+  <div class="row text-center">
+    <div class="col-12">
+      <h1 id="pretty-report-title" class="text-center"></h1>
+    </div>
+  </div>
+  {% if student_entry %}
+  <div class="row">
+    <div class="col-12">
+      <div style="height: 300px" id="chart_div"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div style="height: 300px" id="pie_chart_div"></div>
+    </div>
+  </div>
+  {% endif %}
+{% endblock charts %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>
+    {% if student %}
+      google.charts.load(
+        'current',
+        {
+          packages: [
+            'corechart',
+            'bar'
+          ]
+        }
+      ).then(function () {
+        var data = new google.visualization.DataTable();
+
+        data.addColumn('string', 'Núcleo');
+        data.addColumn('number', 'Alumnos');
+        data.addColumn({type: 'string', role: 'annotation'});
+        data.addColumn({type: 'string', role: 'style'});
+
+        data.addRows([
+          [
+            'Nivel 3',
+            {{ student_entry.achieved }},
+            '{{ student_entry.achieved }}',
+            '#689f38'
+          ],
+          [
+            'Nivel 2',
+            {{ student_entry.moderately_accomplished }},
+            '{{ student_entry.moderately_accomplished }}',
+            '#2980b9'
+          ],
+          [
+            'Nivel 1',
+            {{ student_entry.not_achieved }},
+            '{{ student_entry.not_achieved }}',
+            '#dd191d'
+          ]
+        ]);
+
+        var options = {
+          title: '{{ student_entry.core_name }}',
+          legend: {position: 'none'},
+          hAxis: {
+            title: 'Escala de Apreciación',
+          },
+          vAxis: {
+            title: 'Cantidad de evaluaciones',
+            minValue: 1
+          },
+        };
+
+        var columnChartElement = document.getElementById('chart_div');
+        var columnChart = new google.visualization.ColumnChart(columnChartElement);
+        columnChart.draw(data, options);
+
+        var pieChartData = google.visualization.arrayToDataTable([
+          ['Categoría', 'Cantidad'],
+          ['Nivel 3',     {{ student_entry.achieved }}],
+          ['Nivel 2', {{ student_entry.moderately_accomplished }}],
+          ['Nivel 1',  {{ student_entry.not_achieved }}]
+        ]);
+
+        var prettyTitle = 'Evaluaciones de {{ student.first_name }} {{ student.last_name }}';
+
+        var pieChartOptions = {
+          title: 'Evaluaciones',
+          colors: ['#689f38', '#2980b9', '#dd191d'],
+          legend: {
+            position: 'labeled'
+          },
+          pieHole: 0.25
+        };
+
+        var pieChart = new google.visualization.PieChart(
+          document.getElementById('pie_chart_div')
+        );
+
+        pieChart.draw(pieChartData, pieChartOptions);
+        $("#pretty-report-title").text(prettyTitle);
+      });
+    {% endif %}
+
+    $(document).ready(
+      function () {
+        $('select#id_level').change(
+          function () {
+            $('#id_group,#id_learning_target').val('');
+            $('form').submit();
+          }
+        );
+
+        $("select#id_school").change(
+          function(){
+            $("select#id_group").val("");
+            $('form').submit();
+          }
+        );
+
+        $('select#id_core,select#id_group,select#id_learning_target').change(
+          function () {
+            $('form').submit();
+          }
+        )
+      }
+    );
+  </script>
+{% endblock extra_js %}

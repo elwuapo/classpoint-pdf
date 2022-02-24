@@ -1,0 +1,259 @@
+{% extends 'learning_targets/learning_target_base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block header_content %}
+  Detalles de la Actividad
+{% endblock header_content %}
+
+{% block page_title %}
+  Detalles de la Actividad
+{% endblock page_title %}
+
+{% block main_box_content %}
+  <strong style="font-size: 18px; width: 15%; padding-bottom: 10px">{{ activity.activity_id }}</strong>
+
+  <div class="row">
+  <div class="col-12">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <div class="btn-group">
+      <button id="btn-experiencia" data-activetag="#experiencia" class="btn-elegir-tab btn btn-secondary active">
+        Experiencia
+      </button>
+      <button id="btn-objetivos-transversales" data-activetag="#objetivos-transversales" class="btn-elegir-tab btn btn-secondary">
+        Objetivos Transversales
+      </button>
+      <button id="btn-escala-apreciacion" data-activetag="#escala-apreciacion" class="btn-elegir-tab btn btn-secondary">
+        Rúbrica
+      </button>
+      <button id="btn-materiales" data-activetag="#materiales" class="btn-elegir-tab btn btn-secondary">
+        Materiales
+      </button>
+      <span class="border-right"></span>
+    </div>
+  </ul>
+  </div>
+  </div>
+
+  <div class="tab-content">
+    <div id="experiencia" class="tab">
+      <table class="table table-striped">
+          <thead>
+             <tr>
+                <th ></th>
+                <th></th>
+             </tr>
+          </thead>
+          <tbody>
+             <tr>
+                <td><strong>Objetivo del aprendizaje</strong></td>
+                <td style="font-size: 14px">{{ activity.learning_target.description|linebreaks|escape }}</td>
+             </tr>
+             {% if user.is_admin %}
+             <tr>
+                <td><strong>Id. de la actividad</strong></td>
+                <td>{{ activity.activity_id }}</td>
+             </tr>
+             {% endif %}
+             <tr>
+                <td><strong>Objetivo de aprendizaje específico</strong></td>
+                <td style="font-size: 14px">{{ activity.specific_learning_target|linebreaks|escape }}</td>
+             </tr>
+
+             <tr>
+               <td><strong>Experiencia de aprendizaje</strong></td>
+               <td style="font-size: 14px">
+                  <strong style="font-size: 16px">Inicio</strong>
+                  {{ activity.learning_experience_beginning|linebreaks|escape }}
+                  <strong style="font-size: 16px">Desarrollo</strong>
+                  {{ activity.learning_experience_development|linebreaks|escape }}
+                  <strong style="font-size: 16px">Cierre</strong>
+                  {{ activity.learning_experience_conclusion|linebreaks|escape }}
+                </td>
+             </tr>
+
+             {% if overwritten_learning_experience %}
+               <tr>
+                 <td class="text-primary"><strong>Experiencia de aprendizaje (Editada)</strong></td>
+                 <td style="font-size: 14px">
+                    <strong style="font-size: 16px">Inicio</strong>
+                    {{ override_evaluation.override_beginning|linebreaks|escape }}
+                    <strong style="font-size: 16px">Desarrollo</strong>
+                    {{ override_evaluation.override_development|linebreaks|escape }}
+                    <strong style="font-size: 16px">Cierre</strong>
+                    {{ override_evaluation.override_conclusion|linebreaks|escape }}
+                  </td>
+               </tr>
+             {% endif %}
+
+          </tbody>
+      </table>
+    </div>
+    <div id="objetivos-transversales" class="tab" style="display: none">
+      <table class="table table-striped">
+          <thead>
+             <tr>
+                <th ></th>
+                <th></th>
+             </tr>
+          </thead>
+          <tbody>
+
+             <tr>
+                <td><strong>
+                  {% if activity.learning_target.core_is_personal_and_social %}
+                    OT1
+                  {% else %}
+                    Identidad y autonomía
+                  {% endif %}
+                </strong></td>
+                <td style="font-size: 14px">{{ activity.identity_and_autonomy_target|linebreaks|escape }}</td>
+             </tr>
+             <tr>
+                <td><strong>
+                  {% if activity.learning_target.core_is_personal_and_social %}
+                    OT2
+                  {% else %}
+                    Convivencia y ciudadanía
+                  {% endif %}
+                </strong></td>
+                <td style="font-size: 14px">{{ activity.coexistence_and_citizenship_target|linebreaks|escape }}</td>
+             </tr>
+             <tr>
+                <td><strong>
+                  {% if activity.learning_target.core_is_personal_and_social %}
+                    OT3
+                  {% else %}
+                    Corporalidad y movimiento
+                  {% endif %}
+                </strong></td>
+                <td style="font-size: 14px">{{ activity.corporality_and_movement_target|linebreaks|escape }}</td>
+             </tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div id="escala-apreciacion" class="tab" style="display: none;">
+      <table class="table table-striped">
+        <thead>
+           <tr>
+              <th>Rúbrica</th>
+              <th></th>
+           </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Alumno ausente</strong></td>
+            <td style="font-size: 14px">
+              {{ activity.not_evaluated_rubric|default:"-" }}
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Nivel 1</strong></td>
+            <td style="font-size: 14px">
+              {{ activity.not_achieved_rubric|default:"-" }}
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Nivel 2</td>
+            <td style="font-size: 14px">{{ activity.moderately_accomplished_rubric|default:"-" }}</td>
+          </tr>
+          <tr>
+            <td><strong>Nivel 3</strong></td>
+            <td style="font-size: 14px">{{ activity.achieved_rubric|default:"-" }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {% if user.is_coordinator %}
+        <a class="btn btn-lg btn-success" href="{% url 'evaluations:create' activity.pk %}" style="margin-right: 10px">
+          Crear Evaluación
+        </a>
+      {% endif %}
+    </div>
+
+    <div id="materiales" class="tab" style="display: none;">
+      <table class="table table-striped">
+        <thead>
+           <tr>
+              <th ></th>
+              <th></th>
+           </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td><strong>Materiales</strong></td>
+              <td style="font-size: 14px">{{ activity.materials|linebreaks|escape }}</td>
+           </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+
+  {% if group_evaluations %}
+    <div class="row">
+      <div class="col-md-3">
+        <h3 class="text-success">Modificaciones</h3>
+      </div>
+      <div class="col-md-6">
+        <div class="table-responsive">
+          <table id="table-item" class="table table-hover">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Fecha</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody style="font-size: 16px">
+              {% for group_evaluation in group_evaluations %}
+                <tr>
+                  <td>{{ group_evaluation.group }}</td>
+                  <td>{{ group_evaluation.created_at|date:'d/m/Y' }}</td>
+                  <td>
+                    <a class="btn btn-warning" href="{% url 'evaluations:group_evaluation_print' group_evaluation.pk %}?print">
+                      Imprimir
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row" style="margin-top: 20px">
+    <div class="col-12 text-center">
+    {% if user.is_admin %}
+        <a class="btn btn-lg btn-success" href="{% url 'learning_targets:activity_edit' activity.pk %}" style="margin-right: 10px">
+          Editar actividad
+        </a>
+        <a class="btn btn-lg btn-primary" href="{% url 'learning_targets:activity_list' %}" style="margin-right: 10px">
+          Ver actividades
+        </a>
+    {% endif %}
+      <a class="btn btn-lg btn-warning" href="{% url 'learning_targets:activity_detail' activity.pk %}?print">
+        Imprimir
+      </a>
+    </div>
+  </div>
+
+{% endblock main_box_content %}
+
+{% block extra_js %}
+  <script>
+    $(document).ready(function(){
+      $(".btn-elegir-tab").click(
+        function(event){
+          $(".tab").css("display", "none");
+          var dblock = $(this).data("activetag");
+          $(dblock).css("display", "block");
+          $(".btn-elegir-tab").removeClass("active");
+          $(this).addClass("active");
+        }
+      );
+    });
+  </script>
+{% endblock extra_js %}

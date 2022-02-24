@@ -1,0 +1,311 @@
+{% extends 'evaluations/evaluation_base.html' %}
+
+{% load crispy_forms_tags static %}
+
+{% block header_content %}
+  Gestionar evaluación
+{% endblock header_content %}
+
+{% block page_title %}
+  Gestionar evaluación
+{% endblock page_title %}
+
+{% block main_box_content %}
+  <div class="row">
+    <h1>{{ group_evaluation.evaluation.activity }}</h1>
+  </div>
+
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <h1 style="padding-left: 0">Escala de apreciación:</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <div style="width: 100%" class="alert alert-success">
+        <strong>Nivel 3:</strong>
+        {{ group_evaluation.evaluation.activity.achieved_rubric }}
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <div style="width: 100%" class="alert alert-info">
+        <strong>Nivel 2:</strong>
+        {{ group_evaluation.evaluation.activity.moderately_accomplished_rubric }}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <div style="width: 100%" class="alert alert-danger">
+        <strong>Nivel 1:</strong>
+        {{ group_evaluation.evaluation.activity.not_achieved_rubric }}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <div style="width: 100%" class="alert alert-warning">
+        <strong>Alumno ausente:</strong>
+        {{ group_evaluation.evaluation.activity.not_evaluated_rubric }}
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="">
+    <div class="offset-1">
+     <a style="margin-left: 10px;"  class="btn btn-primary" href="{% url 'learning_targets:activity_detail' group_evaluation.evaluation.activity.id %}">
+        Ir a actividad
+      </a>
+    </div>
+
+    <div class="offset-1">
+     <a style="" class="btn btn-success" data-toggle="collapse" href="#collapse-chart" role="button" aria-expanded="false" aria-controls="#collapse-chart">
+        Ver estadísticas
+      </a>
+    </div>
+
+    <div class="offset-1">
+     <a style="" class="btn btn-primary" data-toggle="collapse" href="#collapse-activity-part-edit" role="button" aria-expanded="false" aria-controls="#collapse-activity-part-edit">
+        Editar actividad
+      </a>
+    </div>
+
+    {% if user.has_professor_experience_enabled %}
+    <div class="offset-1">
+     <a style="margin-top:-10px" class="btn btn-primary" data-toggle="collapse" href="#collapse-activity-script-edit" role="button" aria-expanded="false" aria-controls="#collapse-activity-script-edit">
+        Editar pauta
+      </a>
+    </div>
+    {% endif %}
+
+    <div class="col-md-6 offset-3">
+      <div class="collapse" id="collapse-chart" style="width: 100%; height: 100%;">
+        <div id="piechart" style="width: 100%; height: 100%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="offset-1 col-md-10 offset-1">
+      <form class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="experience-form"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <br>
+                <h1>Actividad original:</h1>
+                <blockquote class="lead">
+                  <strong>Identidad y autonomía:</strong><br>
+                  {{ default_identity_and_autonomy_target|linebreaks }}
+                </blockquote>
+
+                <blockquote class="lead">
+                  <strong>Convivencia y ciudadanía:</strong><br>
+                  {{ default_coexistence_and_citizenship_target|linebreaks }}
+                </blockquote>
+
+                <blockquote class="lead">
+                  <strong>Corporalidad y movimiento:</strong><br>
+                  {{ default_corporality_and_movement_target|linebreaks }}
+                </blockquote>
+
+                <blockquote class="lead">
+                  <strong>Materiales:</strong><br>
+                  {{ default_materials|linebreaks }}
+                </blockquote>
+
+                {% if user.has_professor_experience_enabled %}
+                <br>
+                <h1>Pauta original:</h1>
+                <blockquote class="lead">
+                  <strong>Inicio</strong><br>
+                  {{ default_beginning|linebreaks }}
+                </blockquote>
+
+                <blockquote class="lead">
+                  <strong>Desarrollo:</strong><br>
+                  {{ default_development|linebreaks }}
+                </blockquote>
+
+                <blockquote class="lead">
+                  <strong>Conclusiones:</strong><br>
+                  {{ default_conclusion|linebreaks }}
+                </blockquote>
+                {% endif %}
+              </div>
+            </div>
+
+            <div id="collapse-activity-part-edit" class="collapse">
+              <div class="form-row">
+                <h1>Editar Actividad</h1>
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_identity_and_autonomy_target|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_coexistence_and_citizenship_target|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_corporality_and_movement_target|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_materials|as_crispy_field }}
+                </div>
+              </div>
+            </div>
+
+            {% if user.has_professor_experience_enabled %}
+            <div id="collapse-activity-script-edit" class="collapse">
+              <div class="form-row">
+                <h1>Editar pauta de la Actividad</h1>
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_beginning|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_development|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.override_conclusion|as_crispy_field }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+        {{ formset.management_form }}
+
+        {{ formset|as_crispy_errors }}
+
+        <div class="row">
+          <div class="col-md-12">
+            <h1 style="padding-left: 0">Evaluaciones:</h1>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr style="font-weight: bold;">
+                <th>#</th>
+                <th>Alumno</th>
+                <th>Evaluación</th>
+                <th>Evolución</th>
+                <th>Anotaciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for form in formset %}
+                <tr>
+                  <td>
+                    <a target="_blank" href="{% url 'evaluations:student_evolution' group_evaluation.id  form.student_id %}">
+                      {{ form.student_list_number }}
+                    </a>
+                  </td>
+                  <td>
+                    {{ form.student_full_name }}
+                  </td>
+                  <td>
+                    {{ form.classification|as_crispy_field }}
+                  </td>
+                  <td>
+                    <a class="btn btn-warning" target="_blank" href="{% url 'evaluations:student_evolution' group_evaluation.id  form.student_id %}">
+                      Evolución
+                    </a>
+                  </td>
+                  <td>
+                    <a style="margin-top:-10px; font-size: 16px;" data-toggle="collapse" href="#collapse-{{ form.student_id }}" role="button" aria-expanded="false" aria-controls="#collapse-{{ form.student_id }}">
+                      Ver más...
+                    </a>
+
+                    <div class="collapse" id="collapse-{{ form.student_id }}">
+                      {{ form.annotations|as_crispy_field }}
+                    </div>
+
+                    {% for hidden_field in form.hidden_fields %}
+                      {{ hidden_field }}
+                    {% endfor %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="control-group" style="margin-top:10px">
+          <div class="controls">
+            <button type="submit" class="btn btn-lg btn-primary">Guardar</button>
+            <a href="{% url 'evaluations:group_evaluations_list' %}" class="btn btn-lg btn-danger btn-cancel text-white pull-right">
+              Cancelar
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+{% endblock main_box_content %}
+
+{% block extra_js %}
+  <script src="{% static 'components/jquery.maskedinput/dist/jquery.maskedinput.min.js' %}"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      $("#id_due_date").mask("99/99/9999");
+      $(".form-check").css(
+        {
+          'display': 'inline',
+          'margin-right': '10px',
+        }
+      );
+    });
+  </script>
+
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+      var data = google.visualization.arrayToDataTable([
+        ['Categoría', 'Cantidad'],
+        ['Nivel 3', {{ group_evaluation.achieved_count }}],
+        ['Nivel 2', {{ group_evaluation.moderately_accomplished_count }}],
+        ['Nivel 1', {{ group_evaluation.not_achieved_count }}],
+        ['Alumno ausente', {{ group_evaluation.not_evaluated_count }}]
+      ]);
+
+      var options = {
+        title: 'Evaluaciones',
+        colors: ['#689f38', '#2980b9', '#dd191d', '#ffa000']
+      };
+
+      var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+      chart.draw(data, options);
+    }
+  </script>
+{% endblock extra_js %}
+
+{% block extra_css %}
+  <style>
+    .asteriskField {
+      display: none;
+    }
+    blockquote{
+      margin-left: 20px;
+    }
+  </style>
+{% endblock extra_css %}

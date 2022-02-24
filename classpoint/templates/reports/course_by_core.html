@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block header_content %}
+  Reporte por curso
+{% endblock header_content %}
+
+{% block page_title %}
+  Reporte por curso
+{% endblock page_title %}
+
+{% block main_box_content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="main-box clearfix">
+        <header class="main-box-header clearfix">
+          <h2></h2>
+        </header>
+
+        <div class="main-box-body clearfix">
+          <form enctype="multipart/form-data" class="form-horizontal" method="get">
+            {{ form|crispy }}
+          </form>
+
+          
+          {% for course_entry in course_by_core_data %}
+            <div style="margin: 10px" class="main-box clearfix">
+              <div class="row">
+                <div class="col-12">
+                  <div style="height: 400px" id="chart_div_{{ course_entry.abbreviation }}"></div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-8">
+                  <div style="height: 250px" id="pie_chart_div_{{ course_entry.abbreviation }}"></div>
+                </div>
+                <div class="col-2">
+                    <table class="table table-striped">
+                        <thead>
+                        </thead>
+                        <tbody>
+                        <tr>
+                          <td style="color: darkkhaki; font-size: 20px"><strong>Ausentes</strong></td>
+                          <td style="font-weight: bolder; font-size: 20px" class="absent-count">-</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      {% if course_by_core_data %}
+        <a class="btn btn-warning"
+          style="width: 180px"
+            href="download-pdf/?school={{ form.school.value }}&level={{ form.level.value }}&core={{ form.core.value }}&learning_target={{ form.learning_target.value }}&course={{course}}&course_by_core_data={{course_by_core_data}}">
+          <i class="fa fa-check"></i>&nbsp;Imprimir PDF
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+{% endblock main_box_content %}
+
+{% block content %}
+{% endblock content %}
+
+{% block extra_css %}
+  <style>
+    .row {
+      margin:0 !important;
+    }
+  </style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>
+    google.charts.load(
+      'current',
+      {
+        packages: [
+          'corechart',
+          'bar'
+        ]
+      }
+    ).then(function () {
+      {% for course_entry in course_by_core_data %}
+        var data = new google.visualization.DataTable();
+
+        data.addColumn('string', 'Núcleo');
+        data.addColumn('number', 'Alumnos');
+        data.addColumn({type: 'string', role: 'annotation'});
+        data.addColumn({type: 'string', role: 'style'});
+
+        data.addRows([
+          [
+            'Nivel 3',
+            {{ course_entry.achieved }},
+            '{{ course_entry.achieved }}',
+            '#689f38'
+          ],
+          [
+            'Nivel 2',
+            {{ course_entry.moderately_accomplished }},
+            '{{ course_entry.moderately_accomplished }}',
+            '#2980b9'
+          ],
+          [
+            'Nivel 1',
+            {{ course_entry.not_achieved }},
+            '{{ course_entry.not_achieved }}',
+            '#dd191d'
+          ]
+        ]);
+
+        var options = {
+          title: '{{ course_entry.core_name }}',
+          legend: {position: 'none'},
+          hAxis: {
+            title: 'Escala de Apreciación',
+          },
+          vAxis: {
+            title: 'Cantidad de alumnos',
+            minValue: 1
+          },
+        };
+
+        var columnChartElement = document.getElementById('chart_div_{{ course_entry.abbreviation }}');
+        var columnChart = new google.visualization.ColumnChart(columnChartElement);
+        columnChart.draw(data, options);
+
+        var pieChartData = google.visualization.arrayToDataTable([
+          ['Categoría', 'Cantidad'],
+          ['Nivel 3',     {{ course_entry.achieved }}],
+          ['Nivel 2',      {{ course_entry.moderately_accomplished }}],
+          ['Nivel 1',  {{ course_entry.not_achieved }}]
+        ]);
+
+        var pieChartOptions = {
+          title: 'Evaluaciones',
+          colors: ['#689f38', '#2980b9', '#dd191d'],
+          legend: {
+            position: 'labeled'
+          },
+          pieHole: 0.25
+        };
+
+        var pieChartId = 'pie_chart_div_{{ course_entry.abbreviation }}';
+        $('#' + pieChartId).parent().parent().find('.absent-count').html('{{ course_entry.not_evaluated }}');
+
+        {% if not course_entry.empty %}
+          var pieChart = new google.visualization.PieChart(
+              document.getElementById(pieChartId)
+          );
+
+          pieChart.draw(pieChartData, pieChartOptions);
+        {% endif %}
+      {% endfor %}
+    });
+
+    $(document).ready(
+      function(){
+        $('select#id_level').change(
+          function () {
+            $('#id_course,#id_learning_target').val('');
+            $('form').submit();
+          }
+        );
+
+        $("select#id_school").change(
+          function(){
+            $("select#id_course").val("");
+            $('form').submit();
+          }
+        );
+
+        $('select#id_core,select#id_level,select#id_learning_target,select#id_group').change(
+          function(){
+            $('form').submit();
+          }
+        )
+      }
+    );
+  </script>
+{% endblock extra_js %}
