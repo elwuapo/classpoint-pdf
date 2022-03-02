@@ -1,0 +1,110 @@
+{% extends 'groups/group_base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block header_content %}
+  Detalles del Curso {{ group }}
+{% endblock header_content %}
+
+{% block page_title %}
+  Detalles del Curso {{ group }}
+{% endblock page_title %}
+
+{% block main_box_content %}
+  <table class="table table-striped">
+      <thead>
+         <tr>
+            <th>{{ group }}</th>
+            <th></th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td><strong>Nombre</strong></td>
+            <td>{{ group }}</td>
+         </tr>
+         <tr>
+            <td><strong>Nivel</strong></td>
+            <td>{{ group.get_group_type_display }}</td>
+         </tr>
+         <tr>
+            <td><strong>Educadora responsable</strong></td>
+            <td>{{ group.responsible_professor }}</td>
+         </tr>
+         <tr>
+            <td><strong>Escuela</strong></td>
+            <td>{{ group.school }}</td>
+         </tr>
+         <tr>
+            <td colspan="2">
+              <strong>Alumnos</strong> <br>
+              <hr>
+
+              {% if request.user.is_coordinator %}
+                <a class="btn btn-warning btn-lg" href="{% url 'groups:import_students' group.pk %}">
+                  <i class="fa fa-upload"></i>
+                  Cargar Alumnos
+                </a>
+                <hr>
+              {% endif %}
+
+              <table class="table table-stripped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>RUT</th>
+                    <th>Fecha de Nacimiento</th>
+                    {% if user.is_coordinator %}
+                    <th></th>
+                    {% endif %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for student in group.all_students %}
+                    <tr>
+                      <td>{{ student.list_number }}</td>
+                      <td>{{ student.first_name }}</td>
+                      <td>{{ student.last_name }}</td>
+                      <td>{{ student.rut }}</td>
+                      <td>{{ student.birth_date|date:'d/m/Y' }}</td>
+                      {% if user.is_coordinator %}
+                      <td>
+                        <a class="btn btn-success" href="{% url 'students:edit' student.pk %}">Editar</a>
+                      </td>
+                      {% endif %}
+                    </tr>
+                  {% empty %}
+                    <p>No se encontraron alumnos</p>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </td>
+         </tr>
+      </tbody>
+  </table>
+
+  <div class="row">
+    <div class="col-12 text-center" style="margin-bottom: 20px">
+      {% if user.is_coordinator %}
+      <a class="btn btn-lg btn-success" href="{% url 'groups:edit' group.pk %}" style="margin-right: 10px">
+        Editar curso
+      </a>
+      <a class="btn btn-lg btn-primary" href="{% url 'groups:list' %}" style="margin-right: 10px">
+        Cursos
+      </a>
+      <a class="btn btn-lg btn-warning" href="{% url 'groups:group_view_pdf' %}" style="margin-right: 10px">
+        Imprimir
+      </a>
+      {% elif user.is_professor %}
+        <a class="btn btn-lg btn-primary" href="{% url 'groups:professor_list' %}" style="margin-right: 10px">
+          Cursos
+        </a>
+        <a class="btn btn-lg btn-warning" href="{% url 'groups:group_view_pdf' group.pk%}" style="margin-right: 10px">
+          Imprimir
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock main_box_content %}
